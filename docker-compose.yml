@@ -1,0 +1,49 @@
+version: '3'
+
+services:
+  
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile_backend
+    command: bash -c "pwd && ls && cd redis_celery && python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    stdin_open: true
+    tty: true
+    container_name: backend_app_1
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis-server
+  web_2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: bash -c "pwd && ls && cd redis_celery && python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8001"
+    stdin_open: true
+    tty: true
+    container_name: remote_service_1
+    ports:
+      - "8001:8001"
+    depends_on:
+      - redis-server
+  redis-server: 
+    image: 'redis'
+    ports:
+      - "6379:6379"
+  celery:
+    build: .      
+    command: bash -c "pwd && ls && cd redis_celery && celery -A redis_celery worker -l info"
+    container_name: worker_1
+    depends_on:
+      - redis-server
+      - web_2
+  flower:  
+    image: mher/flower
+    command: ["flower", "--broker=redis://redis-server:6379", "--port=8888"]  
+    ports:  
+     - 8888:8888 
+    depends_on:
+      - redis-server 
+      - celery
+      - web
+      - web_2
