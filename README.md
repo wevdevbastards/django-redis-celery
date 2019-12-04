@@ -1,16 +1,6 @@
 # django-redis-celery
-Code example to communicate two different Django Projects through RabbitMq as Broker and Celery as Task Runner
+Code example to communicate two different Django Projects through redis as Broker and Celery as Task Runner
 
-Default User for rabbitmq server is django and also the password.
-The Rabbitmq vhost is rabbit.<br>
-By default the user django has the "management" role.
-<br><br>
-If you want change this, you need to enter to the rabbitmq-server container to bash command line and write:
-
-rabbitmqctl add_user user_you_want user_password<br>
-rabbitmqctl add_vhost v_host_name_you_want<br>
-rabbitmqctl set_permissions -p v_host_name_you_want user_you_want ".*" ".*" ".*"<br>
-rabbitmqctl set_user_tags user_you_want management<br>
 <br>
 
 To run the project and launch all containers type:<br><br>
@@ -31,7 +21,7 @@ We store the result in a variable which will be used later to fetch the task res
 
 At this point Celery received the message and routed it to a queue. In the other side the remote service app has been loaded by celery as a worker by executing this command in the docker-compose.yml file, worker container:
 <br>
-celery -A rabbitmq_celery worker -l info
+celery -A redis_celery worker -l info
 <br>
 Celery will look for the requested task using the "auto_discover_tasks" method, and it will execute it passing it the parameters entered in the web app UI form. 
 <br>
